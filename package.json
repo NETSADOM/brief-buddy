@@ -1,0 +1,51 @@
+{
+  "name": "voice-brief",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No tests configured yet\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@aws-sdk/client-s3": "^3.1009.0",
+    "@aws-sdk/s3-request-presigner": "^3.1009.0",
+    "@hubspot/api-client": "^13.4.0",
+    "@slack/web-api": "^7.15.0",
+    "axios": "^1.13.6",
+    "bullmq": "^5.71.0",
+    "cors": "^2.8.6",
+    "dayjs": "^1.11.20",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "googleapis": "^171.4.0",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.10.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "openai": "^6.29.0",
+    "pg": "^8.20.0",
+    "rss-parser": "^3.13.0",
+    "twilio": "^5.13.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^25.5.0",
+    "@types/pg": "^8.18.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

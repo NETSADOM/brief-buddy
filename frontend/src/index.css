@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 20% 3%;
+    --foreground: 240 5% 96%;
+    --card: 240 16% 7%;
+    --card-foreground: 240 5% 96%;
+    --popover: 240 16% 7%;
+    --popover-foreground: 240 5% 96%;
+    --primary: 246 89% 70%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 240 5% 96%;
+    --muted: 240 4% 46%;
+    --muted-foreground: 240 4% 60%;
+    --accent: 12 85% 63%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 15%;
+    --input: 240 6% 15%;
+    --ring: 246 89% 70%;
+    --radius: 0.75rem;
+
+    --sidebar-background: 240 18% 5%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 246 89% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 10% 12%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 6% 15%;
+    --sidebar-ring: 246 89% 70%;
+
+    /* Custom tokens */
+    --card-surface: 240 15% 9%;
+    --card-hover: 240 14% 11%;
+    --glow-primary: 246 89% 70%;
+    --glow-accent: 12 85% 63%;
+    --surface-border: rgba(255, 255, 255, 0.06);
+    --shadow-card: 0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -4px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.05);
+    --gradient-waveform: linear-gradient(to top, hsl(246 89% 70%), hsl(12 85% 63%));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .card-surface {
+    @apply bg-[hsl(var(--card-surface))] rounded-2xl;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--surface-border);
+  }
+  .card-surface-hover {
+    @apply card-surface transition-all duration-300;
+  }
+  .card-surface-hover:hover {
+    background: hsl(var(--card-hover));
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .glow-accent {
+    box-shadow: 0 0 16px 4px hsl(var(--glow-accent) / 0.3);
+  }
+  .glow-primary {
+    box-shadow: 0 0 16px 4px hsl(var(--glow-primary) / 0.15);
+  }
+  .label-caps {
+    @apply text-[10px] uppercase tracking-[0.12em] font-bold;
+    color: hsl(var(--muted-foreground));
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
