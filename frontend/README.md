@@ -1,6 +1,6 @@
-# VoiceBrief Frontend
+# Brief Buddy Frontend
 
-React dashboard for VoiceBrief — daily voice briefings, task inbox, and settings. Wired to the VoiceBrief API (auth, briefings, tasks, settings, integrations).
+React dashboard for Brief Buddy — daily voice briefings, task inbox, and settings. Wired to the Brief Buddy API (auth, briefings, tasks, settings, integrations).
 
 ## Running with the API
 

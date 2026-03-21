@@ -1,21 +1,33 @@
 import { Router } from "express";
+import { z } from "zod";
 import { briefingQueue } from "../../scheduler/queue";
 import { pool } from "../../db/queries";
 import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 import { runBriefingPipeline } from "../../agents/orchestrator";
 
 export const briefingsRouter = Router();
+const modeSchema = z.enum(["morning", "evening", "weekly", "alert"]);
 
 briefingsRouter.post("/trigger", requireAuth, async (req: AuthenticatedRequest, res) => {
   const userId = req.user!.id;
-  const mode = (req.body?.mode ?? "morning") as "morning" | "evening" | "weekly" | "alert";
+  const parsed = modeSchema.safeParse(req.body?.mode ?? "morning");
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid briefing mode" });
+    return;
+  }
+  const mode = parsed.data;
   const result = await runBriefingPipeline(userId, mode);
   res.json(result);
 });
 
 briefingsRouter.post("/enqueue", requireAuth, async (req: AuthenticatedRequest, res) => {
   const userId = req.user!.id;
-  const mode = (req.body?.mode ?? "morning") as "morning" | "evening" | "weekly" | "alert";
+  const parsed = modeSchema.safeParse(req.body?.mode ?? "morning");
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid briefing mode" });
+    return;
+  }
+  const mode = parsed.data;
   const job = await briefingQueue.add(mode, { userId, mode });
   res.json({ jobId: job.id });
 });

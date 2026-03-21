@@ -114,6 +114,11 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   return result.rows[0] ?? null;
 }
 
+export async function listUserIds(): Promise<string[]> {
+  const result = await pool.query<{ id: string }>("SELECT id FROM users");
+  return result.rows.map((r) => r.id);
+}
+
 export async function getUserSettings(userId: string): Promise<UserSettings> {
   const result = await pool.query<UserSettings>(
     `SELECT

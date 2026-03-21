@@ -1,5 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
-import OpenAI from "openai";
+import axios from "axios";
 import { env } from "../config/env";
 import { withFallback } from "../utils/timeouts";
 
@@ -19,6 +18,17 @@ function parseJsonArray(text: string): ExtractedTask[] {
   }
 }
 
+function readOllamaContent(content: unknown): string {
+  if (typeof content === "string") return content.trim();
+  if (Array.isArray(content)) {
+    return content
+      .map((item) => (typeof item === "string" ? item : typeof item === "object" && item && "text" in item ? String((item as { text?: unknown }).text ?? "") : ""))
+      .join("")
+      .trim();
+  }
+  return "";
+}
+
 export async function extractActionItems(message: string): Promise<ExtractedTask[]> {
   const prompt =
     "Extract any action items from this message. Return JSON array of { task, dueDate, source, contactName }. Return empty array if none.\n\nMessage:\n" +
@@ -26,28 +36,27 @@ export async function extractActionItems(message: string): Promise<ExtractedTask
 
   return withFallback(
     async () => {
-      if (env.ANTHROPIC_API_KEY) {
-        const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-        const response = await anthropic.messages.create({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 400,
-          messages: [{ role: "user", content: prompt }]
-        });
-        const text = response.content
-          .map((block) => ("text" in block ? block.text : ""))
-          .join("")
-          .trim();
-        return parseJsonArray(text);
-      }
+      const baseUrl = env.OLLAMA_BASE_URL ?? "http://localhost:11434";
+      const model = env.OLLAMA_MODEL ?? "llama3.2";
 
-      if (!env.OPENAI_API_KEY) return [];
-      const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
-      const response = await openai.responses.create({
-        model: "gpt-4o-mini",
-        input: prompt
-      });
-      const output = response.output_text ?? "[]";
-      return parseJsonArray(output);
+      const response = await axios.post(
+        `${baseUrl}/api/chat`,
+        {
+          model,
+          messages: [
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          stream: false
+        },
+        { timeout: 9000 }
+      );
+
+      const text = readOllamaContent(response.data?.message?.content);
+
+      return parseJsonArray(text);
     },
     [],
     "task-extractor"

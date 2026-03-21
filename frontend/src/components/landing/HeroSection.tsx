@@ -39,7 +39,7 @@ const HeroSection = () => (
       transition={{ delay: 0.35 }}
       className="text-lg text-muted-foreground max-w-xl mb-10 leading-relaxed"
     >
-      VoiceBrief calls you every morning with a personalized AI briefing — your emails, calendar, deals, and news. Hands-free. 90 seconds. Done.
+      Brief Buddy calls you every morning with a personalized AI briefing — your emails, calendar, deals, and news. Hands-free. 90 seconds. Done.
     </motion.p>
 
     <motion.div
@@ -73,7 +73,7 @@ const HeroSection = () => (
             <Phone className="w-5 h-5 text-primary" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-medium text-foreground">VoiceBrief Assistant</p>
+            <p className="text-sm font-medium text-foreground">Brief Buddy Assistant</p>
             <p className="text-xs text-green-500">Incoming call...</p>
           </div>
         </div>

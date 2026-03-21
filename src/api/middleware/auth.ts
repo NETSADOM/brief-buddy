@@ -15,8 +15,12 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
 
   try {
     const token = authHeader.slice("Bearer ".length);
-    const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string };
-    req.user = { id: payload.sub };
+    const payload = jwt.verify(token, env.JWT_SECRET);
+    if (!payload || typeof payload !== "object" || typeof (payload as { sub?: unknown }).sub !== "string") {
+      res.status(401).json({ error: "Invalid token payload" });
+      return;
+    }
+    req.user = { id: (payload as { sub: string }).sub };
     next();
   } catch {
     res.status(401).json({ error: "Invalid token" });

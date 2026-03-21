@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Clock, CheckCircle, AlertTriangle, TrendingUp, Play, Loader2 } from "lucide-react";
@@ -55,6 +56,12 @@ const Dashboard = () => {
       queryClient.invalidateQueries({ queryKey: ["briefings"] });
     },
   });
+
+  useEffect(() => {
+    if (!triggerMutation.isSuccess) return;
+    const t = setTimeout(() => triggerMutation.reset(), 5000);
+    return () => clearTimeout(t);
+  }, [triggerMutation.isSuccess, triggerMutation]);
 
   const updateTaskMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => updateTask(id, { status }),
@@ -167,7 +174,7 @@ const Dashboard = () => {
             {triggerMutation.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Triggering…
+                Generating your briefing… (15–60 sec)
               </>
             ) : (
               <>
@@ -176,6 +183,9 @@ const Dashboard = () => {
               </>
             )}
           </button>
+          {triggerMutation.isSuccess && (
+            <p className="text-xs text-green-500 mt-2">Briefing created. See Briefing History below.</p>
+          )}
           {triggerMutation.isError && (
             <p className="text-xs text-destructive mt-2">{String(triggerMutation.error)}</p>
           )}

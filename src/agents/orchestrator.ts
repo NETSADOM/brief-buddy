@@ -93,7 +93,7 @@ export async function runBriefingPipeline(
 
   const topTasks = await getTopOpenTasks(userId, 3);
   if (profile?.phone) {
-    const delivery = await deliverBriefingCall(profile.phone, audioUrl, script, briefingId, topTasks);
+    const delivery = await deliverBriefingCall(profile.phone, audioUrl, script, userId, briefingId, topTasks);
     if (delivery.status === "delivered") {
       await markBriefingDelivered(briefingId);
     }

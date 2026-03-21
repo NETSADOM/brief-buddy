@@ -36,7 +36,7 @@ const Navbar = () => {
               <div key={i} className="w-[3px] rounded-full bg-primary" style={{ height: `${s * 100}%` }} />
             ))}
           </div>
-          <span className="text-lg font-semibold text-foreground tracking-tight">VoiceBrief</span>
+          <span className="text-lg font-semibold text-foreground tracking-tight">Brief Buddy</span>
         </Link>
 
         {/* Desktop */}

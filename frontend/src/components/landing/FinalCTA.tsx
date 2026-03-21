@@ -12,7 +12,7 @@ const FinalCTA = () => (
           Stop starting your day in your inbox.
         </h2>
         <p className="text-lg text-muted-foreground mb-10">
-          Let VoiceBrief brief you instead.
+          Let Brief Buddy brief you instead.
         </p>
         <a href="#pricing" className="inline-block bg-accent text-accent-foreground px-10 py-4 rounded-full font-semibold text-lg hover:brightness-110 transition-all glow-accent">
           Start your free 14-day trial

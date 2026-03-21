@@ -9,7 +9,7 @@ const Footer = () => (
             <div key={i} className="w-[2px] rounded-full bg-primary" style={{ height: `${s * 100}%` }} />
           ))}
         </div>
-        <span className="text-sm font-semibold text-foreground">VoiceBrief</span>
+        <span className="text-sm font-semibold text-foreground">Brief Buddy</span>
         <span className="text-xs text-muted-foreground ml-2">Your AI chief of staff.</span>
       </div>
 

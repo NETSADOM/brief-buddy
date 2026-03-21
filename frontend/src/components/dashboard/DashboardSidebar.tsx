@@ -32,7 +32,7 @@ const DashboardSidebar = () => {
               <div key={i} className="w-[3px] rounded-full bg-primary" style={{ height: `${s * 100}%` }} />
             ))}
           </div>
-          <span className="text-lg font-semibold text-foreground tracking-tight">VoiceBrief</span>
+          <span className="text-lg font-semibold text-foreground tracking-tight">Brief Buddy</span>
         </div>
 
         <nav className="flex-1 px-3 space-y-1">
@@ -63,7 +63,7 @@ const DashboardSidebar = () => {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium text-foreground truncate">Demo User</p>
-              <p className="text-xs text-muted-foreground">VoiceBrief</p>
+              <p className="text-xs text-muted-foreground">Brief Buddy</p>
             </div>
           </div>
           <button

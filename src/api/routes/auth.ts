@@ -4,21 +4,22 @@ import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
 import { seedDemoUser, upsertIntegration } from "../../db/queries";
+import { AuthenticatedRequest, requireAuth } from "../middleware/auth";
 
 export const authRouter = Router();
 
 authRouter.get("/demo-token", async (_req, res) => {
+  if (env.NODE_ENV === "production") {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
   const userId = await seedDemoUser();
   const token = jwt.sign({ sub: userId }, env.JWT_SECRET, { expiresIn: "7d" });
   res.json({ token, userId });
 });
 
-authRouter.get("/google/start", (req, res) => {
-  const userId = String(req.query.userId ?? "");
-  if (!userId) {
-    res.status(400).json({ error: "Missing userId query param" });
-    return;
-  }
+authRouter.get("/google/start", requireAuth, (req: AuthenticatedRequest, res) => {
+  const userId = req.user!.id;
   if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
     res.status(400).json({ error: "Google OAuth env vars not configured" });
     return;
@@ -26,6 +27,7 @@ authRouter.get("/google/start", (req, res) => {
 
   const redirectUri = env.GOOGLE_REDIRECT_URI ?? "http://localhost:3000/api/auth/google/callback";
   const oauth2Client = new OAuth2Client(env.GOOGLE_CLIENT_ID, env.GOOGLE_CLIENT_SECRET, redirectUri);
+  const state = jwt.sign({ sub: userId, provider: "google" }, env.JWT_SECRET, { expiresIn: "10m" });
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
@@ -33,20 +35,33 @@ authRouter.get("/google/start", (req, res) => {
       "https://www.googleapis.com/auth/gmail.readonly",
       "https://www.googleapis.com/auth/calendar.readonly"
     ],
-    state: userId
+    state
   });
-  res.redirect(url);
+  res.json({ url });
 });
 
 authRouter.get("/google/callback", async (req, res) => {
   const code = String(req.query.code ?? "");
-  const userId = String(req.query.state ?? "");
-  if (!code || !userId) {
+  const stateToken = String(req.query.state ?? "");
+  if (!code || !stateToken) {
     res.status(400).json({ error: "Missing code/state in callback" });
     return;
   }
   if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
     res.status(400).json({ error: "Google OAuth env vars not configured" });
+    return;
+  }
+
+  let userId = "";
+  try {
+    const payload = jwt.verify(stateToken, env.JWT_SECRET) as { sub: string; provider: string };
+    if (payload.provider !== "google" || !payload.sub) {
+      res.status(400).json({ error: "Invalid OAuth state" });
+      return;
+    }
+    userId = payload.sub;
+  } catch {
+    res.status(400).json({ error: "Invalid OAuth state" });
     return;
   }
 
@@ -67,15 +82,16 @@ authRouter.get("/google/callback", async (req, res) => {
     expiresAt: credentials.expiry_date ? new Date(credentials.expiry_date) : null
   });
 
+  const frontendBase = (env.FRONTEND_URL ?? env.BASE_URL ?? "").replace(/\/$/, "");
+  if (frontendBase) {
+    res.redirect(`${frontendBase}/dashboard/settings?provider=google&connected=1`);
+    return;
+  }
   res.json({ connected: true, provider: "google" });
 });
 
-authRouter.get("/slack/start", (req, res) => {
-  const userId = String(req.query.userId ?? "");
-  if (!userId) {
-    res.status(400).json({ error: "Missing userId query param" });
-    return;
-  }
+authRouter.get("/slack/start", requireAuth, (req: AuthenticatedRequest, res) => {
+  const userId = req.user!.id;
   if (!env.SLACK_CLIENT_ID || !env.SLACK_CLIENT_SECRET) {
     res.status(400).json({ error: "Slack OAuth env vars not configured" });
     return;
@@ -92,19 +108,33 @@ authRouter.get("/slack/start", (req, res) => {
     "im:read"
   ].join(",");
 
-  const url = `https://slack.com/oauth/v2/authorize?client_id=${encodeURIComponent(env.SLACK_CLIENT_ID)}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(userId)}`;
-  res.redirect(url);
+  const state = jwt.sign({ sub: userId, provider: "slack" }, env.JWT_SECRET, { expiresIn: "10m" });
+  const url = `https://slack.com/oauth/v2/authorize?client_id=${encodeURIComponent(env.SLACK_CLIENT_ID)}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}`;
+  res.json({ url });
 });
 
 authRouter.get("/slack/callback", async (req, res) => {
   const code = String(req.query.code ?? "");
-  const userId = String(req.query.state ?? "");
-  if (!code || !userId) {
+  const stateToken = String(req.query.state ?? "");
+  if (!code || !stateToken) {
     res.status(400).json({ error: "Missing code/state in callback" });
     return;
   }
   if (!env.SLACK_CLIENT_ID || !env.SLACK_CLIENT_SECRET) {
     res.status(400).json({ error: "Slack OAuth env vars not configured" });
+    return;
+  }
+
+  let userId = "";
+  try {
+    const payload = jwt.verify(stateToken, env.JWT_SECRET) as { sub: string; provider: string };
+    if (payload.provider !== "slack" || !payload.sub) {
+      res.status(400).json({ error: "Invalid OAuth state" });
+      return;
+    }
+    userId = payload.sub;
+  } catch {
+    res.status(400).json({ error: "Invalid OAuth state" });
     return;
   }
 
@@ -137,5 +167,10 @@ authRouter.get("/slack/callback", async (req, res) => {
     expiresAt
   });
 
+  const frontendBase = (env.FRONTEND_URL ?? env.BASE_URL ?? "").replace(/\/$/, "");
+  if (frontendBase) {
+    res.redirect(`${frontendBase}/dashboard/settings?provider=slack&connected=1`);
+    return;
+  }
   res.json({ connected: true, provider: "slack" });
 });

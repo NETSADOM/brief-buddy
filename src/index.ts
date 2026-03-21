@@ -19,7 +19,7 @@ import { createBriefingWorker } from "./scheduler/worker";
 
 async function bootstrap(): Promise<void> {
   await initializeDatabase();
-  const demoUserId = await seedDemoUser();
+  await seedDemoUser();
 
   await Promise.all([
     registerMorningBriefingJob(),
@@ -28,7 +28,7 @@ async function bootstrap(): Promise<void> {
     registerUrgencyWatcherJob()
   ]);
 
-  const worker = createBriefingWorker(demoUserId);
+  const worker = createBriefingWorker();
   worker.on("failed", (job, err) => {
     console.error(`Worker failed for job ${job?.id}:`, err.message);
   });
@@ -60,7 +60,7 @@ async function bootstrap(): Promise<void> {
   }
 
   app.listen(env.PORT, () => {
-    console.log(`VoiceBrief API listening on port ${env.PORT}`);
+    console.log(`Brief Buddy API listening on port ${env.PORT}`);
   });
 }
 

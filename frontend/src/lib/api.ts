@@ -28,6 +28,10 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   }
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   if (!res.ok) {
+    if (res.status === 401) {
+      clearToken();
+      window.dispatchEvent(new CustomEvent("voicebrief:auth-expired"));
+    }
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error((err as { error?: string }).error || res.statusText);
   }
@@ -37,6 +41,10 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
 // Auth
 export function getDemoToken(): Promise<{ token: string; userId: string }> {
   return api<{ token: string; userId: string }>("/api/auth/demo-token");
+}
+
+export function getOAuthStartUrl(provider: "google" | "slack"): Promise<{ url: string }> {
+  return api<{ url: string }>(`/api/auth/${provider}/start`);
 }
 
 // Briefings

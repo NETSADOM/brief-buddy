@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getDemoToken, setToken, clearToken } from "@/lib/api";
 
 const USER_ID_KEY = "voicebrief_userId";
@@ -29,6 +29,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearToken();
     setTokenState(null);
     setUserIdState(null);
+  }, []);
+
+  useEffect(() => {
+    const onAuthExpired = () => {
+      setTokenState(null);
+      setUserIdState(null);
+    };
+    window.addEventListener("voicebrief:auth-expired", onAuthExpired);
+    return () => window.removeEventListener("voicebrief:auth-expired", onAuthExpired);
   }, []);
 
   return (

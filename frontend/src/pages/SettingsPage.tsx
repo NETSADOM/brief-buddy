@@ -2,14 +2,11 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { getSettings, getIntegrations, updateSettings } from "@/lib/api";
+import { getSettings, getIntegrations, updateSettings, getOAuthStartUrl } from "@/lib/api";
 
 const tabs = ["Briefing Schedule", "Voice", "Integrations", "Urgency Rules"];
 
 const voices = ["Rachel (Default)", "Marcus (Deep)", "Sofia (Warm)", "Alex (Neutral)"];
-
-const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -23,7 +20,7 @@ const SettingsPage = () => {
   const [dealValueThreshold, setDealValueThreshold] = useState(10000);
 
   const queryClient = useQueryClient();
-  const { userId } = useAuth();
+  const [connectingProvider, setConnectingProvider] = useState<"google" | "slack" | null>(null);
 
   const { data: settings } = useQuery({
     queryKey: ["settings"],
@@ -112,9 +109,14 @@ const SettingsPage = () => {
     { name: "HubSpot", icon: "🟠", connected: false, provider: "crm" as const, comingSoon: true },
   ];
 
-  const getOAuthUrl = (provider: "google" | "slack") => {
-    if (!userId) return "#";
-    return `${API_BASE}/api/auth/${provider}/start?userId=${encodeURIComponent(userId)}`;
+  const connectIntegration = async (provider: "google" | "slack") => {
+    setConnectingProvider(provider);
+    try {
+      const { url } = await getOAuthStartUrl(provider);
+      window.location.assign(url);
+    } finally {
+      setConnectingProvider(null);
+    }
   };
 
   return (
@@ -273,20 +275,22 @@ const SettingsPage = () => {
                     )}
                   />
                   {item.provider === "google" && (
-                    <a
-                      href={getOAuthUrl("google")}
-                      className="text-xs font-medium px-3 py-1 rounded-full bg-accent text-accent-foreground hover:brightness-110"
+                    <button
+                      onClick={() => connectIntegration("google")}
+                      disabled={connectingProvider === "google"}
+                      className="text-xs font-medium px-3 py-1 rounded-full bg-accent text-accent-foreground hover:brightness-110 disabled:opacity-60"
                     >
                       {item.connected ? "Reconnect" : "Connect"}
-                    </a>
+                    </button>
                   )}
                   {item.provider === "slack" && (
-                    <a
-                      href={getOAuthUrl("slack")}
-                      className="text-xs font-medium px-3 py-1 rounded-full bg-accent text-accent-foreground hover:brightness-110"
+                    <button
+                      onClick={() => connectIntegration("slack")}
+                      disabled={connectingProvider === "slack"}
+                      className="text-xs font-medium px-3 py-1 rounded-full bg-accent text-accent-foreground hover:brightness-110 disabled:opacity-60"
                     >
                       {item.connected ? "Reconnect" : "Connect"}
-                    </a>
+                    </button>
                   )}
                   {item.provider === "crm" && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted/10 text-muted-foreground border border-border">

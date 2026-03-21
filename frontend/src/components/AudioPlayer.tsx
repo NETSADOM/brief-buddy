@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 import Waveform from "./Waveform";
 
@@ -12,10 +12,11 @@ interface AudioPlayerProps {
 const AudioPlayer = ({ duration = "1:32", className = "", compact = false, src }: AudioPlayerProps) => {
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const togglePlay = () => {
     if (src) {
-      const el = document.querySelector(`audio[data-voicebrief-audio]`) as HTMLAudioElement | null;
+      const el = audioRef.current;
       if (el) {
         if (playing) el.pause();
         else el.play();
@@ -42,7 +43,7 @@ const AudioPlayer = ({ duration = "1:32", className = "", compact = false, src }
     <div className={`card-surface p-4 flex items-center gap-4 ${className}`}>
       {src && (
         <audio
-          data-voicebrief-audio
+          ref={audioRef}
           src={src}
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
